@@ -3,12 +3,12 @@
 ## ~~Sprint 1: Project Setup & Core Architecture~~ ✅
 - [x] Initialize Flutter project
 - [x] Create scalable folder structure (`lib/features`, `lib/core`, `lib/shared`, `lib/services`)
-- [x] Add essential dependencies (Firebase, Provider, image_picker, uuid, etc.)
+- [x] Add essential dependencies (Firebase, Provider, image_picker, uuid, google_fonts)
 - [x] Setup basic routing & BottomNavigationBar shell (Home, Add, Chat, Profile)
 - [x] Create data models — `Item`, `User`, `ChatMessage`, `ChatRoom`, `Barter`
 - [x] Create abstract service layer + mock implementations for offline UI testing
 - [x] Firebase.initializeApp() enabled in main.dart
-- [x] Create base theme (Material 3 with earthy green palette)
+- [x] Global AppTheme design system (Indigo/Teal + Amber palette, Poppins/Inter typography, 12px shapes)
 
 ## ~~Sprint 2: Authentication & User Profile~~ 🔲 (deferred)
 - [ ] Firebase Auth — email/password sign-up & login
@@ -40,7 +40,7 @@
 - [x] Reusable EmptyStateWidget and ErrorStateWidget
 - [x] Loading indicators on image loads, chat room creation, data streams
 - [x] Empty states on Home, Chat list, Chat room, Profile
-- [x] Error states with icons on Home and Chat
+- [x] Error states with descriptive messages on Home and Chat
 - [x] Profile placeholder with login CTA
 - [x] Comprehensive README.md (description, features, setup, architecture)
 - [x] Final todo.md cleanup
