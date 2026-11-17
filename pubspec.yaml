@@ -1,0 +1,34 @@
+name: warisan_kating
+description: "Warisan Kating — an e-commerce / barter app."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^5.2.0
+  cloud_firestore: ^7.2.0
+  firebase_storage: ^14.1.0
+
+  # State management
+  provider: ^6.1.5
+
+  # Media
+  image_picker: ^1.2.4
+  flutter_image_compress: ^2.5.1
+
+  # Utilities
+  uuid: ^4.6.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
