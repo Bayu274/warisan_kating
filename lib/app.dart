@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:warisan_kating/core/router/app_router.dart';
-import 'package:warisan_kating/core/theme/app_theme.dart';
+import 'package:warisan_kating/core/theme.dart';
 import 'package:warisan_kating/services/item_service.dart';
 import 'package:warisan_kating/services/user_service.dart';
 import 'package:warisan_kating/services/chat_service.dart';

@@ -49,18 +49,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
       builder: (_) => const _ImageSourceSheet(),
     );
     if (source == null) return;
+    if (!context.mounted) return;
 
     final service = context.read<ImagePickerService>();
     final file = switch (source) {
       _ImageSourceChoice.camera => await service.pickFromCamera(),
       _ImageSourceChoice.gallery => await service.pickFromGallery(),
     };
+    if (!context.mounted) return;
 
     if (file != null && mounted) {
       setState(() => _imageFile = file);
 
-      if (!context.mounted) return;
       final size = await file.length();
+      if (!context.mounted) return;
       final kb = (size / 1024).toStringAsFixed(1);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Image compressed to $kb KB'), duration: const Duration(seconds: 2)),
@@ -89,7 +91,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       await context.read<ItemService>().addItem(item, imageFile: _imageFile);
 
-      if (!mounted) return;
+      if (!context.mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Barang berhasil ditambahkan!')),
@@ -105,7 +107,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         _condition = _conditions.first;
       });
     } catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal menyimpan: $e')),
       );
@@ -175,7 +177,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
               // --- condition dropdown ---
               DropdownButtonFormField<String>(
-                value: _condition,
+                initialValue: _condition,
                 decoration: const InputDecoration(
                   labelText: 'Kondisi',
                   border: OutlineInputBorder(),
