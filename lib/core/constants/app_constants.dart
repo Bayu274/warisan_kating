@@ -7,6 +7,15 @@ class AppConstants {
   // Firestore collection names
   static const String usersCollection = 'users';
   static const String productsCollection = 'products';
+  static const String categoriesCollection = 'categories';
   static const String bartersCollection = 'barters';
   static const String chatsCollection = 'chats';
+  static const List<String> defaultCategories = [
+    'Buku',
+    'Elektronik',
+    'Perabotan',
+    'Pakaian',
+    'Sepatu',
+    'Aksesoris',
+  ];
 }

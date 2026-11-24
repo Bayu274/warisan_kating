@@ -10,6 +10,10 @@ abstract class ItemService {
   /// Real-time stream of all items (ordered by newest first).
   Stream<List<Item>> itemsStream();
 
+  Stream<List<String>> categoriesStream();
+
+  Future<void> addCategory(String category);
+
   Future<Item?> getItemById(String id);
 
   /// Add an item. If [imageFile] is provided, the implementation should

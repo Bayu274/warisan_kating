@@ -9,11 +9,9 @@ import 'package:warisan_kating/shared/models/item_model.dart';
 
 /// Production [ItemService] backed by Cloud Firestore + Firebase Storage.
 class FirestoreItemService implements ItemService {
-  FirestoreItemService({
-    FirebaseFirestore? firestore,
-    FirebaseStorage? storage,
-  })  : _firestore = firestore ?? FirebaseFirestore.instance,
-        _storage = storage ?? FirebaseStorage.instance;
+  FirestoreItemService({FirebaseFirestore? firestore, FirebaseStorage? storage})
+    : _firestore = firestore ?? FirebaseFirestore.instance,
+      _storage = storage ?? FirebaseStorage.instance;
 
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
@@ -21,6 +19,47 @@ class FirestoreItemService implements ItemService {
 
   CollectionReference<Map<String, dynamic>> get _col =>
       _firestore.collection(AppConstants.productsCollection);
+
+  CollectionReference<Map<String, dynamic>> get _categories =>
+      _firestore.collection(AppConstants.categoriesCollection);
+
+  @override
+  Stream<List<String>> categoriesStream() {
+    return _categories
+        .snapshots()
+        .map((snapshot) {
+          final categories =
+              <String>{
+                  ...AppConstants.defaultCategories,
+                  ...snapshot.docs
+                      .map((doc) => doc.data()['name'] as String? ?? doc.id)
+                      .where((name) => name.trim().isNotEmpty),
+                }.toList()
+                ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+          return categories;
+        })
+        .handleError((Object error) {
+          throw Exception('Categories stream error: $error');
+        });
+  }
+
+  @override
+  Future<void> addCategory(String category) async {
+    final name = category.trim();
+    if (name.isEmpty) return;
+    final id = name
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+        .replaceAll(RegExp(r'^-+|-+$'), '');
+    if (id.isEmpty) {
+      throw ArgumentError.value(
+        category,
+        'category',
+        'Nama kategori tidak valid',
+      );
+    }
+    await _categories.doc(id).set({'name': name}, SetOptions(merge: true));
+  }
 
   // ---------------------------------------------------------------------------
   // READ
@@ -43,8 +82,8 @@ class FirestoreItemService implements ItemService {
         .snapshots()
         .map((snap) => snap.docs.map((d) => Item.fromMap(d.data())).toList())
         .handleError((Object e) {
-      throw Exception('Items stream error: $e');
-    });
+          throw Exception('Items stream error: $e');
+        });
   }
 
   @override

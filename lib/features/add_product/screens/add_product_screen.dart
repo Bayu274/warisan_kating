@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:warisan_kating/core/constants/app_constants.dart';
 import 'package:warisan_kating/services/image_picker_service.dart';
 import 'package:warisan_kating/services/item_service.dart';
 import 'package:warisan_kating/shared/models/item_model.dart';
@@ -25,19 +26,28 @@ class AddProductScreen extends StatefulWidget {
 
 class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
+  late final Stream<List<String>> _categoriesStream;
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _priceCtrl = TextEditingController();
+  final _categoryCtrl = TextEditingController();
 
   String _condition = _conditions.first;
   File? _imageFile;
   bool _submitting = false;
 
   @override
+  void initState() {
+    super.initState();
+    _categoriesStream = context.read<ItemService>().categoriesStream();
+  }
+
+  @override
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
     _priceCtrl.dispose();
+    _categoryCtrl.dispose();
     super.dispose();
   }
 
@@ -65,7 +75,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
       if (!context.mounted) return;
       final kb = (size / 1024).toStringAsFixed(1);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Image compressed to $kb KB'), duration: const Duration(seconds: 2)),
+        SnackBar(
+          content: Text('Image compressed to $kb KB'),
+          duration: const Duration(seconds: 2),
+        ),
       );
     }
   }
@@ -84,14 +97,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
         description: _descCtrl.text.trim(),
         price: double.tryParse(_priceCtrl.text.trim()) ?? 0,
         condition: _condition,
+        category: _categoryCtrl.text.trim(),
         imageUrl: '', // set by service after upload
         sellerId: 'current-user', // TODO: replace with auth user id
         timestamp: DateTime.now(),
       );
 
-      await context.read<ItemService>().addItem(item, imageFile: _imageFile);
+      final itemService = context.read<ItemService>();
+      if (item.category.isNotEmpty) {
+        await itemService.addCategory(item.category);
+      }
+      await itemService.addItem(item, imageFile: _imageFile);
 
-      if (!context.mounted) return;
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Barang berhasil ditambahkan!')),
@@ -102,15 +120,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
       _titleCtrl.clear();
       _descCtrl.clear();
       _priceCtrl.clear();
+      _categoryCtrl.clear();
       setState(() {
         _imageFile = null;
         _condition = _conditions.first;
       });
     } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan: $e')),
-      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Gagal menyimpan: $e')));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -130,10 +148,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // --- image picker area ---
-              _ImagePreview(
-                file: _imageFile,
-                onTap: () => _pickImage(context),
-              ),
+              _ImagePreview(file: _imageFile, onTap: () => _pickImage(context)),
               const SizedBox(height: 20),
 
               // --- title ---
@@ -144,8 +159,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   border: OutlineInputBorder(),
                 ),
                 textInputAction: TextInputAction.next,
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Judul wajib diisi' : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Judul wajib diisi'
+                    : null,
               ),
               const SizedBox(height: 14),
 
@@ -158,8 +174,52 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
                 maxLines: 3,
                 textInputAction: TextInputAction.next,
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Deskripsi wajib diisi' : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Deskripsi wajib diisi'
+                    : null,
+              ),
+              const SizedBox(height: 14),
+
+              StreamBuilder<List<String>>(
+                stream: _categoriesStream,
+                builder: (context, snapshot) {
+                  final categories =
+                      <String>{
+                        ...AppConstants.defaultCategories,
+                        ...?snapshot.data,
+                      }.toList()..sort(
+                        (a, b) => a.toLowerCase().compareTo(b.toLowerCase()),
+                      );
+                  return TextFormField(
+                    controller: _categoryCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Kategori',
+                      hintText: 'Contoh: Buku, Elektronik, Pakaian',
+                      helperText: 'Pilih kategori atau tulis kategori baru',
+                      border: const OutlineInputBorder(),
+                      suffixIcon: categories.isEmpty
+                          ? null
+                          : PopupMenuButton<String>(
+                              tooltip: 'Pilih kategori tersimpan',
+                              icon: const Icon(Icons.expand_more_rounded),
+                              onSelected: (value) => _categoryCtrl.text = value,
+                              itemBuilder: (context) => categories
+                                  .map(
+                                    (category) => PopupMenuItem(
+                                      value: category,
+                                      child: Text(category),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                    ),
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.next,
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? 'Kategori wajib diisi'
+                        : null,
+                  );
+                },
               ),
               const SizedBox(height: 14),
 

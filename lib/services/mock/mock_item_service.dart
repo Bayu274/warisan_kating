@@ -8,6 +8,15 @@ import 'package:warisan_kating/shared/models/item_model.dart';
 class MockItemService implements ItemService {
   static const _uuid = Uuid();
 
+  final List<String> _categories = [
+    'Buku',
+    'Elektronik',
+    'Perabotan',
+    'Pakaian',
+    'Sepatu',
+    'Aksesoris',
+  ];
+
   final List<Item> _items = [
     Item(
       id: 'mock-1',
@@ -36,6 +45,19 @@ class MockItemService implements ItemService {
 
   @override
   Stream<List<Item>> itemsStream() => Stream.value(List.unmodifiable(_items));
+
+  @override
+  Stream<List<String>> categoriesStream() =>
+      Stream.value(List.unmodifiable(_categories));
+
+  @override
+  Future<void> addCategory(String category) async {
+    final name = category.trim();
+    if (name.isNotEmpty &&
+        !_categories.any((item) => item.toLowerCase() == name.toLowerCase())) {
+      _categories.add(name);
+    }
+  }
 
   @override
   Future<Item?> getItemById(String id) async =>
